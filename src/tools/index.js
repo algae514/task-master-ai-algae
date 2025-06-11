@@ -14,7 +14,6 @@ import { registerFixDependenciesTool } from './fix-dependencies.js';
 import { registerRemoveTaskTool } from './remove-task.js';
 import { registerMoveTaskTool } from './move-task.js';
 import { registerComplexityReportTool } from './complexity-report.js';
-import { registerModelsTool } from './models.js';
 import logger from '../logger.js';
 
 /**
@@ -54,7 +53,6 @@ export function registerTaskMasterTools(server) {
     
     // Reports and configuration
     registerComplexityReportTool(server);
-    registerModelsTool(server);
     
     logger.info('Task Master tools registered successfully');
   } catch (error) {
