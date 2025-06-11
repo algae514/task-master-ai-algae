@@ -14,6 +14,7 @@ import { registerFixDependenciesTool } from './fix-dependencies.js';
 import { registerRemoveTaskTool } from './remove-task.js';
 import { registerMoveTaskTool } from './move-task.js';
 import { registerComplexityReportTool } from './complexity-report.js';
+import { registerParsePRDTool } from './parse-prd.js';
 import logger from '../logger.js';
 
 /**
@@ -24,6 +25,9 @@ export function registerTaskMasterTools(server) {
   try {
     // Core initialization
     registerInitTool(server);
+    
+    // PRD and AI-guided tools
+    registerParsePRDTool(server);
     
     // Task listing and viewing
     registerListTasksTool(server);
