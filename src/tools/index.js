@@ -15,6 +15,19 @@ import { registerRemoveTaskTool } from './remove-task.js';
 import { registerMoveTaskTool } from './move-task.js';
 import { registerComplexityReportTool } from './complexity-report.js';
 import { registerParsePRDTool } from './parse-prd.js';
+import { registerEnhancedParsePRDTool } from './parse-prd-enhanced.js';
+import { registerUpdateTasksTool } from './update-tasks.js';
+import { registerGetTasksByKeywordsTool } from './get-tasks-by-keywords.js';
+import { registerGetTasksByFlowsTool } from './get-tasks-by-flows.js';
+import { registerUpdateTasksByKeywordsTool } from './update-tasks-by-keywords.js';
+import { registerUpdateTasksByFlowsTool } from './update-tasks-by-flows.js';
+import { registerListKeywordsTool } from './list-keywords.js';
+import { registerListFlowsTool } from './list-flows.js';
+import { registerExpandTaskTool } from './expand-task.js';
+import { registerAnalyzeTaskComplexityTool } from './analyze-task-complexity.js';
+import { registerUpdateTaskByIdTool } from './update-task-by-id.js';
+import { registerUpdateSubtaskByIdTool } from './update-subtask-by-id.js';
+import { registerAddTaskTool } from './add-task.js';
 import logger from '../logger.js';
 
 /**
@@ -27,7 +40,21 @@ export function registerTaskMasterTools(server) {
     registerInitTool(server);
     
     // PRD and AI-guided tools
-    registerParsePRDTool(server);
+    registerEnhancedParsePRDTool(server); // Enhanced version with keywords and flowNames
+    registerUpdateTasksTool(server);
+    
+    // Keywords and Flow Names tools
+    registerGetTasksByKeywordsTool(server);
+    registerGetTasksByFlowsTool(server);
+    registerUpdateTasksByKeywordsTool(server);
+    registerUpdateTasksByFlowsTool(server);
+    registerListKeywordsTool(server);
+    registerListFlowsTool(server);
+    registerExpandTaskTool(server);
+    registerAnalyzeTaskComplexityTool(server);
+    registerUpdateTaskByIdTool(server);
+    registerUpdateSubtaskByIdTool(server);
+    registerAddTaskTool(server);
     
     // Task listing and viewing
     registerListTasksTool(server);

@@ -8,13 +8,13 @@ import {
 } from './utils.js';
 
 /**
- * Register the parse-prd tool with relevantTasks support for scalable updates
+ * Register the enhanced parse-prd tool with keywords, flowNames and relevantTasks support
  * @param {Object} server - FastMCP server instance
  */
-export function registerParsePRDTool(server) {
+export function registerEnhancedParsePRDTool(server) {
   server.addTool({
     name: 'parse_prd',
-    description: 'Parse a PRD file and generate tasks with relevantTasks arrays for scalable updates. Returns detailed instructions for Claude to execute the task parsing.',
+    description: 'Parse a PRD file and generate tasks with keywords, flowNames and relevantTasks arrays for scalable updates. Returns detailed instructions for Claude to execute the task parsing.',
     parameters: z.object({
       projectRoot: z
         .string()
@@ -37,7 +37,7 @@ export function registerParsePRDTool(server) {
       try {
         const { projectRoot, prdFilePath, numTasks, research } = args;
         
-        logger.info(`Preparing PRD parsing instructions for: ${prdFilePath}`);
+        logger.info(`Preparing enhanced PRD parsing instructions for: ${prdFilePath}`);
         
         // Validate PRD file exists
         if (!fs.existsSync(prdFilePath)) {
@@ -65,7 +65,6 @@ export function registerParsePRDTool(server) {
           }
         }
         
-        // Extract the exact system prompt from the reference implementation with relevantTasks
         const researchPromptAddition = research
           ? `\
 Before breaking down the PRD into tasks, you will:
@@ -97,7 +96,9 @@ Each task should follow this JSON structure:
 \t\"priority\": \"high\" | \"medium\" | \"low\",
 \t\"details\": string (implementation details),
 \t\"testStrategy\": string (validation approach),
-\t\"relevantTasks\": number[] (IDs of tasks that should be updated together when this task changes)
+\t\"relevantTasks\": number[] (IDs of tasks that should be updated together when this task changes),
+\t\"keywords\": string[] (3-8 technical/business terms describing this task),
+\t\"flowNames\": string[] (1-4 business flow names this task belongs to)
 }
 
 Guidelines:
@@ -117,7 +118,18 @@ Guidelines:
     - Include tasks that share components or infrastructure
     - Include dependent tasks that might need updates when this task changes
     - Keep the array small (2-5 tasks max) to prevent update cascades
-    - Consider bi-directional relationships (if A is relevant to B, B should be relevant to A)${research ? '\n13. For each task, include specific, actionable guidance based on current industry standards and best practices discovered through research' : ''}`;
+    - Consider bi-directional relationships (if A is relevant to B, B should be relevant to A)
+13. **IMPORTANT**: Add \"keywords\" array for each task with 3-8 technical/business terms:
+    - Include technology names, frameworks, architectural patterns
+    - Add business domain terms and feature names
+    - Use consistent terminology across related tasks
+    - Examples: [\"authentication\", \"JWT\", \"bcrypt\", \"express\", \"middleware\"]
+14. **IMPORTANT**: Add \"flowNames\" array for each task with 1-4 business flow names:
+    - Group tasks by business functionality or user journeys
+    - Use clear, descriptive flow names like \"User Authentication\", \"Product Management\", \"Order Processing\"
+    - Ensure tasks in the same business flow share flow names
+    - Examples: [\"User Authentication\", \"Security\"]
+15. Ensure keywords and flowNames are consistent across related tasks to enable effective filtering and updates${research ? '\n16. For each task, include specific, actionable guidance based on current industry standards and best practices discovered through research' : ''}`;
         
         const userPrompt = `Here's the Product Requirements Document (PRD) to break down into approximately ${numTasks} tasks, starting IDs from ${nextId}:${research ? '\n\nRemember to thoroughly research current best practices and technologies before task breakdown to provide specific, actionable implementation details.' : ''}\n\n${prdContent}\n\nReturn your response in this format:
 {
@@ -131,7 +143,9 @@ Guidelines:
             \"priority\": \"high\",
             \"details\": \"...\",
             \"testStrategy\": \"...\",
-            \"relevantTasks\": [${nextId + 1}, ${nextId + 2}]
+            \"relevantTasks\": [${nextId + 1}, ${nextId + 2}],
+            \"keywords\": [\"setup\", \"repository\", \"initialization\", \"git\"],
+            \"flowNames\": [\"Project Setup\"]
         },
         ...
     ],
@@ -144,11 +158,15 @@ Guidelines:
 }`;
         
         // Create the instruction response for Claude to act upon
-        const instructions = `I can guide you through parsing this PRD and generating tasks with scalable update support. Here's exactly what you need to do:
+        const instructions = `I can guide you through parsing this PRD and generating enhanced tasks with keywords, flowNames, and scalable update support. Here's exactly what you need to do:
 
 **IMPORTANT**: After I provide these instructions, you should immediately execute them by following the system prompt and user prompt exactly as specified below. This is not just guidance - please act on these instructions right now.
 
-**SCALABILITY NOTE**: This enhanced version includes "relevantTasks" arrays to support efficient batch updates for large projects (50+ tasks) by identifying which tasks should be updated together.
+**ENHANCEMENT FEATURES:**
+- **Keywords**: 3-8 technical/business terms per task for semantic filtering
+- **FlowNames**: 1-4 business flow names per task for workflow organization
+- **RelevantTasks**: Task relationship mapping for efficient batch updates
+- **Scalability**: Ready for 100+ task projects with batch processing support
 
 **SYSTEM PROMPT:**
 ${systemPrompt}
@@ -157,42 +175,53 @@ ${systemPrompt}
 ${userPrompt}
 
 **YOUR NEXT ACTION:**
-Please now analyze the PRD content provided above and generate the tasks JSON according to the specifications. Once you create the JSON response, save it to the file: ${tasksPath}
+Please now analyze the PRD content provided above and generate the enhanced tasks JSON according to the specifications. Once you create the JSON response, save it to the file: ${tasksPath}
 
 **ADDITIONAL STEPS AFTER GENERATING TASKS:**
 1. Save the generated JSON to ${tasksPath}
 2. Use the generate_task_files tool to create individual task files
 3. Confirm the tasks were created successfully
 
-**RELEVANT TASKS GUIDANCE:**
-When setting "relevantTasks" arrays, consider:
+**FIELD GUIDANCE:**
+
+**Keywords Examples:**
+- Backend tasks: [\"express\", \"nodejs\", \"authentication\", \"JWT\", \"bcrypt\"]
+- Frontend tasks: [\"react\", \"components\", \"routing\", \"state-management\"]
+- Database tasks: [\"postgresql\", \"schema\", \"migrations\", \"ORM\"]
+
+**FlowNames Examples:**
+- User Management: [\"User Authentication\", \"User Profile\"]
+- E-commerce: [\"Product Catalog\", \"Order Processing\", \"Payment Integration\"]
+- Admin: [\"Admin Dashboard\", \"User Management\"]
+
+**RelevantTasks Guidance:**
 - Frontend/Backend pairs for the same feature
 - Database schema + API endpoints + UI components for related functionality
 - Shared utility tasks (logging, auth, etc.) that affect multiple features
 - Testing tasks that validate multiple components
 
-Please proceed with generating the tasks now based on the PRD content and instructions above.`;
+Please proceed with generating the enhanced tasks now based on the PRD content and instructions above.`;
         
         const result = {
           success: true,
-          action: 'parse_prd_guidance_with_relevant_tasks',
+          action: 'parse_prd_enhanced_guidance',
           prdFile: prdFilePath,
           targetFile: tasksPath,
           parameters: {
             numTasks,
             nextId,
             research,
-            scalabilityFeatures: ['relevantTasks', 'batchUpdates']
+            enhancementFeatures: ['keywords', 'flowNames', 'relevantTasks', 'batchUpdates']
           },
           instructions
         };
         
-        logger.info(`Generated PRD parsing instructions for ${numTasks} tasks with scalability features${research ? ' with research mode' : ''}`);
+        logger.info(`Generated enhanced PRD parsing instructions for ${numTasks} tasks with keywords and flowNames support${research ? ' with research mode' : ''}`);
         
         return createContentResponse(result);
       } catch (error) {
-        logger.error(`Failed to prepare PRD parsing instructions: ${error.message}`, { error: error.stack, args });
-        return createErrorResponse(`Failed to prepare PRD parsing instructions: ${error.message}`);
+        logger.error(`Failed to prepare enhanced PRD parsing instructions: ${error.message}`, { error: error.stack, args });
+        return createErrorResponse(`Failed to prepare enhanced PRD parsing instructions: ${error.message}`);
       }
     }
   });
