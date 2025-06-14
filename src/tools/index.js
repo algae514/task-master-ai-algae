@@ -29,6 +29,7 @@ import { registerAnalyzeTaskComplexityTool } from './analyze-task-complexity.js'
 import { registerUpdateTaskByIdTool } from './update-task-by-id.js';
 import { registerUpdateSubtaskByIdTool } from './update-subtask-by-id.js';
 import { registerAddTaskTool } from './add-task.js';
+import { registerStatusReportTool, registerFullStatusReportTool } from './status-report.js';
 import logger from '../logger.js';
 
 /**
@@ -86,6 +87,8 @@ export function registerTaskMasterTools(server) {
     
     // Reports and configuration
     registerComplexityReportTool(server);
+    registerStatusReportTool(server);
+    registerFullStatusReportTool(server);
     
     logger.info('Task Master tools registered successfully');
   } catch (error) {
