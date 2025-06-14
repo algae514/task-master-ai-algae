@@ -153,9 +153,10 @@ Return ONLY the JSON object containing the "subtasks" array, matching this struc
         }
         
         // Create the instruction response for Claude to act upon
-        const instructions = `I can guide you through expanding this task into subtasks. Here's exactly what you need to do:
+        const instructions = `I need you to expand this task into subtasks and then actually create them. Here's the complete process:
 
-**IMPORTANT**: After I provide these instructions, you should immediately execute them by following the system prompt and user prompt exactly as specified below. This is not just guidance - please act on these instructions right now.
+**STEP 1: Generate Subtasks JSON**
+First, analyze the task and generate subtasks using these specifications:
 
 **SYSTEM PROMPT:**
 ${systemPrompt}
@@ -163,15 +164,35 @@ ${systemPrompt}
 **USER PROMPT:**
 ${userPrompt}
 
-**YOUR NEXT ACTION:**
-Please now analyze the task provided above and generate the subtasks JSON according to the specifications. Once you create the JSON response, you should:
+**STEP 2: Handle Force Option (if applicable)**
+${force ? `Before creating new subtasks, call clear_subtasks with:
+   - projectRoot: "${projectRoot}"
+   - taskIds: "${taskId}"
 
-1. Parse the subtasks from your response
-2. ${force ? 'Replace existing subtasks' : 'Append new subtasks'} for task ${taskId} in ${tasksPath}
-3. Use the generate_task_files tool to create individual task files
-4. Confirm the subtasks were created successfully
+` : ''}**STEP 3: Create Each Subtask**
+After generating the subtasks JSON${force ? ' and clearing existing subtasks' : ''}, you MUST create each subtask by calling the add_subtask tool for each one. For each subtask in your generated JSON:
 
-Please proceed with generating the subtasks now based on the task details and instructions above.`;
+1. Call add_subtask with:
+   - projectRoot: "${projectRoot}"
+   - parentId: ${taskId}
+   - title: [subtask title from your JSON]
+   - description: [subtask description from your JSON]
+   - details: [subtask details from your JSON]
+   - dependencies: [convert subtask IDs to proper format, e.g., if dependencies: [2], convert to ["${taskId}.2"]]
+   - status: "pending"
+
+2. Repeat this for ALL subtasks in your generated JSON
+
+**STEP 4: Completion**
+After creating all subtasks, optionally run generate_task_files to create individual task files.
+
+**IMPORTANT NOTES:**
+- ${force ? 'Force mode enabled: existing subtasks will be cleared first' : 'These will be appended to any existing subtasks'}
+- Dependencies should reference other subtasks using the format "parentId.subtaskId" (e.g., "${taskId}.1", "${taskId}.2")
+- You MUST actually call add_subtask for each generated subtask - don't just show me the JSON
+
+**START NOW:**
+Begin with Step 1 (generate the subtasks JSON)${force ? ', then Step 2 (clear existing subtasks), then Step 3 (create each new subtask using add_subtask tool calls)' : ', then immediately proceed to Step 3 (create each subtask using add_subtask tool calls)'}.`;
         
         const result = {
           success: true,
