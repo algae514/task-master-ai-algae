@@ -1,6 +1,6 @@
 # Task Master AI Algae
 
-A minimal MCP (Model Context Protocol) server for task management, built as a starting point for expanding task master functionality.
+A minimal MCP (Model Context Protocol) server for task management, built as a starting point for expanding task master functionality. This server provides AI-driven task management tools that work seamlessly with Claude Desktop.
 
 ## Features
 
@@ -11,33 +11,119 @@ A minimal MCP (Model Context Protocol) server for task management, built as a st
 
 ## Installation
 
+### Method 1: Clone from GitHub (Recommended)
+
 ```bash
-cd /Users/balajiv/Documents/coderepos/mcpservers/task-master-ai-algae
+# Clone the repository
+git clone https://github.com/algae514/task-master-ai-algae.git
+cd task-master-ai-algae
+
+# Install dependencies
 npm install
 ```
 
-## Usage
-
-### Running the MCP Server
+### Method 2: Local Development
 
 ```bash
-npm start
+cd /path/to/your/local/copy
+npm install
 ```
 
-### Claude Desktop Integration
+## Claude Desktop Integration
 
-Add to your `claude_desktop_config.json`:
+### Step 1: Find Your Claude Desktop Config File
 
+The location depends on your operating system:
+
+| OS | Config File Location |
+|----|----------------------|
+| **macOS** | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| **Windows** | `%APPDATA%\\Claude\\claude_desktop_config.json` |
+| **Linux** | `~/.config/Claude/claude_desktop_config.json` |
+
+### Step 2: Update Your Configuration
+
+Add the following to your `claude_desktop_config.json`:
+
+#### Option A: Using Cloned Repository
 ```json
 {
-  \"mcpServers\": {
-    \"task-master-ai-algae\": {
-      \"command\": \"node\",
-      \"args\": [\"/Users/balajiv/Documents/coderepos/mcpservers/task-master-ai-algae/server.js\"]
+  "mcpServers": {
+    "task-master-ai-algae": {
+      "command": "node",
+      "args": ["/full/path/to/task-master-ai-algae/server.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
     }
   }
 }
 ```
+
+#### Option B: Using NPX (if published to npm)
+```json
+{
+  "mcpServers": {
+    "task-master-ai-algae": {
+      "command": "npx",
+      "args": ["task-master-ai-algae"]
+    }
+  }
+}
+```
+
+**Important**: Replace `/full/path/to/task-master-ai-algae/server.js` with the actual absolute path to your installation.
+
+### Step 3: Example Complete Configuration
+
+If you have other MCP servers, your complete config might look like:
+
+```json
+{
+  "mcpServers": {
+    "task-master-ai-algae": {
+      "command": "node",
+      "args": ["/Users/username/projects/task-master-ai-algae/server.js"]
+    },
+    "other-mcp-server": {
+      "command": "node",
+      "args": ["/path/to/other/server.js"]
+    }
+  }
+}
+```
+
+### Step 4: Restart Claude Desktop
+
+After updating the configuration:
+1. **Quit Claude Desktop completely** (don't just close the window)
+2. **Restart Claude Desktop**
+3. **Wait for initialization** (may take a few seconds)
+
+### Step 5: Verify Installation
+
+In Claude Desktop, try saying:
+```
+Initialize a Task Master project in /path/to/my/project
+```
+
+If successful, you should see the Task Master directory structure being created.
+
+## Usage
+
+### Running the MCP Server Standalone (for testing)
+
+```bash
+node server.js
+```
+
+### Using with Claude Desktop
+
+Once configured, you can use Task Master tools directly in Claude Desktop by asking Claude to:
+
+- **Initialize a project**: "Initialize Task Master in my project at /path/to/project"
+- **Get help**: "What Task Master tools are available?"
+- **Use tools**: "Use the init tool to set up Task Master in my current project"
 
 ### Using the Tools
 
@@ -50,7 +136,7 @@ Initialize a complete Task Master project:
 
 **Usage**: Provide the `projectRoot` parameter with the absolute path to your project directory.
 
-**Example**: \"Use the init tool with projectRoot '/Users/username/myproject' to set up Task Master\"
+**Example**: "Use the init tool with projectRoot '/Users/username/myproject' to set up Task Master"
 
 ## Adding New Tools
 
@@ -135,11 +221,11 @@ Initialize a complete Task Master project:
 
 2. **Wrong response format**: Don't return plain objects. This causes schema validation errors:
    ```javascript
-   // ❌ Wrong - causes \"Unexpected token\" errors
-   return { success: true, message: \"Done\" };
+   // ❌ Wrong - causes "Unexpected token" errors
+   return { success: true, message: "Done" };
    
    // ✅ Correct - proper MCP format
-   return createContentResponse({ success: true, message: \"Done\" });
+   return createContentResponse({ success: true, message: "Done" });
    ```
 
 3. **Missing error handling**: Unhandled exceptions crash the MCP server:
@@ -170,12 +256,45 @@ Initialize a complete Task Master project:
 
 ## Troubleshooting
 
-- **Check logs**: If it doesn't work, check Claude Desktop logs (usually in `~/Library/Logs/Claude/` on macOS)
+### Common Issues
+
+#### MCP Server Not Loading
+- **Check logs**: Claude Desktop logs are usually in `~/Library/Logs/Claude/` on macOS
 - **Check MCP server logs**: Server logs are written to `logs/task-master-mcp.log` in the project directory
 - **Verify path**: Make sure the server.js file exists and is executable
 - **Test manually**: You can test the server manually by running `node server.js` in the project directory
-- **Schema validation errors**: Usually caused by wrong response format - ensure you're using `createContentResponse()`
-- **JSON parsing errors**: Usually caused by console.log output - ensure you're using the file logger only
+
+#### Schema Validation Errors
+- Usually caused by wrong response format - ensure you're using `createContentResponse()`
+- Check that all parameters are properly validated with Zod schemas
+
+#### JSON Parsing Errors
+- Usually caused by console.log output - ensure you're using the file logger only
+- Make sure no tools are outputting to stdout/stderr
+
+#### Tools Not Available
+- Ensure Claude Desktop was completely restarted after config changes
+- Check that the config file syntax is valid JSON
+- Verify the absolute path to server.js is correct
+
+### Debug Steps
+
+1. **Test server standalone**:
+   ```bash
+   cd /path/to/task-master-ai-algae
+   node server.js
+   ```
+
+2. **Check Claude Desktop config**:
+   ```bash
+   # On macOS
+   cat "~/Library/Application Support/Claude/claude_desktop_config.json"
+   ```
+
+3. **View logs**:
+   ```bash
+   tail -f logs/task-master-mcp.log
+   ```
 
 ## Project Structure
 
@@ -191,6 +310,9 @@ task-master-ai-algae/
 │       └── init.js          # Enhanced init tool
 ├── logs/                    # Generated log files
 │   └── task-master-mcp.log
+├── TASK_MASTER_TOOLS_DOCUMENTATION.md  # Complete tools reference
+├── PRD_DISCIPLINE_FRAMEWORK.md         # PRD best practices
+├── IMPLEMENTATION_REPORT.md            # Implementation details
 └── README.md
 ```
 
@@ -224,6 +346,17 @@ your-project/
 │       └── test-rules
 └── .gitignore (updated)     # Adds Task Master entries
 ```
+
+## Related Documentation
+
+- **[Complete Tools Documentation](TASK_MASTER_TOOLS_DOCUMENTATION.md)** - Comprehensive reference for all 31 Task Master tools
+- **[PRD Best Practices](PRD_DISCIPLINE_FRAMEWORK.md)** - Guidelines for writing effective PRDs
+- **[Implementation Report](IMPLEMENTATION_REPORT.md)** - Technical implementation details
+
+## Repository
+
+- **GitHub**: https://github.com/algae514/task-master-ai-algae
+- **Issues**: Report issues or request features on GitHub
 
 ## License
 
