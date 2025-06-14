@@ -19,8 +19,9 @@ import { registerEnhancedParsePRDTool } from './parse-prd-enhanced.js';
 import { registerUpdateTasksTool } from './update-tasks.js';
 import { registerGetTasksByKeywordsTool } from './get-tasks-by-keywords.js';
 import { registerGetTasksByFlowsTool } from './get-tasks-by-flows.js';
-import { registerUpdateTasksByKeywordsTool } from './update-tasks-by-keywords.js';
-import { registerUpdateTasksByFlowsTool } from './update-tasks-by-flows.js';
+// NOTE: Temporarily disabled due to MCP client response size/timeout issues
+// import { registerUpdateTasksByKeywordsTool } from './update-tasks-by-keywords.js';
+// import { registerUpdateTasksByFlowsTool } from './update-tasks-by-flows.js';
 import { registerListKeywordsTool } from './list-keywords.js';
 import { registerListFlowsTool } from './list-flows.js';
 import { registerExpandTaskTool } from './expand-task.js';
@@ -46,8 +47,9 @@ export function registerTaskMasterTools(server) {
     // Keywords and Flow Names tools
     registerGetTasksByKeywordsTool(server);
     registerGetTasksByFlowsTool(server);
-    registerUpdateTasksByKeywordsTool(server);
-    registerUpdateTasksByFlowsTool(server);
+    // NOTE: Temporarily disabled due to MCP client response size/timeout issues
+    // registerUpdateTasksByKeywordsTool(server);
+    // registerUpdateTasksByFlowsTool(server);
     registerListKeywordsTool(server);
     registerListFlowsTool(server);
     registerExpandTaskTool(server);
