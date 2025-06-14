@@ -14,7 +14,7 @@ import { registerFixDependenciesTool } from './fix-dependencies.js';
 import { registerRemoveTaskTool } from './remove-task.js';
 import { registerMoveTaskTool } from './move-task.js';
 import { registerComplexityReportTool } from './complexity-report.js';
-import { registerParsePRDTool } from './parse-prd.js';
+// NOTE: Using enhanced parse-prd only to avoid tool name conflicts
 import { registerEnhancedParsePRDTool } from './parse-prd-enhanced.js';
 import { registerUpdateTasksTool } from './update-tasks.js';
 import { registerGetTasksByKeywordsTool } from './get-tasks-by-keywords.js';
